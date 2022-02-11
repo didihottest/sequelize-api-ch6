@@ -177,6 +177,10 @@ router.delete('/api/users/:id', async (req, res, next) => {
     const userToDelete = await Users.findByPk(req.params.id)
     // jika user yang akan di edit ditemukan
     if (userToDelete) {
+      // delete anaknya dulu baru ortunya
+      await Cats.destroy({
+        where: { user_uuid: req.params.id }
+      })
       // bentuk sql nya  DELETE FROM "users" WHERE "uuid" = '29b37eb8-8509-498e-837d-db57d8ee2617'
       const deleted = await Users.destroy({
         where: {
