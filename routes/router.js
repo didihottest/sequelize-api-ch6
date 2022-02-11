@@ -35,7 +35,7 @@ router.get('/api/cats', async (req, res, next) => {
 
 // create user
 router.post('/api/users', async (req, res, next) => {
-  const { name, email, hobby, status, is_active, age } = req.body
+  const { name, email, hobby, status, is_active, age, cat_name, cat_color } = req.body
   // operasi create ini sama dengan
   // INSERT INTO "users" ("uuid","name","email","hobby","status","is_active","age","createdAt","updatedAt") 
   // VALUES (uuid, name, email, hobby,status,is_active,age, createdAt, updatedAt) RETURNING 
@@ -49,6 +49,13 @@ router.post('/api/users', async (req, res, next) => {
       is_active,
       age
     })
+
+    await Cats.create({
+      name: cat_name,
+      color: cat_color,
+      user_uuid: newUser.uuid
+    })
+
     if (newUser) {
       res.status(201).json({
         message: "SUCCESS",
@@ -119,7 +126,7 @@ router.post('/api/dogs', async (req, res, next) => {
 
 // edit users
 router.put('/api/users/:id', async (req, res, next) => {
-  const { name, email, hobby, status, is_active, age } = req.body
+  const { name, email, hobby, status, is_active, age, cat_name, cat_color } = req.body
   try {
     // ini bentuk panjang
     // await Users.findOne({
@@ -130,6 +137,15 @@ router.put('/api/users/:id', async (req, res, next) => {
     const userToUpdate = await Users.findByPk(req.params.id)
     // jika user yang akan di edit ditemukan
     if (userToUpdate) {
+      const catToUpdate = await Cats.findOne({
+        where: {
+          user_uuid: req.params.id
+        }
+      })
+      const updatedCat = await catToUpdate.update({
+        name: cat_name,
+        color: cat_color
+      })
       const updated = await userToUpdate.update({
         // kalau name dari body ada pakai name dari body, kalau tidak pakai name yang sebelumnya sudah ada di db
         name: name ?? userToUpdate.name,
